@@ -1,0 +1,11 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# SQLite file for test
+model.sqlite
+
+# A properties configuration for database
+database.properties
