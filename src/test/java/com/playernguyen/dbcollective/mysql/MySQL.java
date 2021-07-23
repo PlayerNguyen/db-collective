@@ -13,8 +13,11 @@ import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+
+@Ignore // Remove this line to test with MySQL
 public class MySQL {
 
     private static MySQLDispatch dispatch;
@@ -65,6 +68,7 @@ public class MySQL {
         }, "DROP TABLE IF EXISTS model");
     }
 
+    
     @Test
     public void shouldConnected() throws SQLException {
         assertNotNull(dispatch.openConnection());

@@ -13,8 +13,10 @@ import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore // Remove this line to test with MySQL
 public class MySQLHikari {
     private static MySQLDispatch dispatch;
 
