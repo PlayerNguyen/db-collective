@@ -1,14 +1,11 @@
 package com.playernguyen.dbcollective.mysql;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import com.playernguyen.dbcollective.DispatchAbstract;
 
 /**
  * MySQLDispatchWrapper, an abstract class to deal with a MySQL server.
  */
-public class MySQLDispatchWrapper extends DispatchAbstract {
+public abstract class MySQLDispatchWrapper extends DispatchAbstract {
 
     private String host = "localhost";
     private String port = "3306";
@@ -20,14 +17,6 @@ public class MySQLDispatchWrapper extends DispatchAbstract {
     public MySQLDispatchWrapper() throws ClassNotFoundException {
         // Check contains driver
         Class.forName("com.mysql.jdbc.Driver");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Connection openConnection() throws SQLException {
-        return null;
     }
 
     public void setDatabase(String database) {

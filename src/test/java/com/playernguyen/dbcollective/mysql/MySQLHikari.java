@@ -18,7 +18,7 @@ import org.junit.Test;
 
 @Ignore // Remove this line to test with MySQL
 public class MySQLHikari {
-    private static MySQLDispatch dispatch;
+    private static MySQLHikariDispatch dispatch;
 
     @BeforeClass
     public static void setup() throws IOException, ClassNotFoundException, SQLException {
@@ -35,16 +35,11 @@ public class MySQLHikari {
             System.out.println(a + " -> " + b);
         });
 
-        dispatch = new MySQLDispatch();
+        dispatch = new MySQLHikariDispatch(properties.getProperty("Host"), properties.getProperty("Port"),
+                properties.getProperty("Username"), properties.getProperty("Password"),
+                properties.getProperty("Database"), properties.getProperty("Options"));
         dispatch.setVerbose(true);
         dispatch.setLogger(Logger.getLogger(MySQL.class.getName()));
-
-        dispatch.setHost(properties.getProperty("Host"));
-        dispatch.setPort(properties.getProperty("Port"));
-        dispatch.setUsername(properties.getProperty("Username"));
-        dispatch.setPassword(properties.getProperty("Password"));
-        dispatch.setDatabase(properties.getProperty("Database"));
-        dispatch.setOptions(properties.getProperty("Options"));
 
         dispatch.execute(callback -> {
         }, "CREATE TABLE IF NOT EXISTS model (id int not null primary key auto_increment, height int not null, weight int not null)");
@@ -65,7 +60,10 @@ public class MySQLHikari {
 
     @Test
     public void shouldConnected() throws SQLException {
-        assertNotNull(dispatch.openConnection());
+        dispatch.openConnection(connection -> {
+
+            assertNotNull(connection);
+        });
     }
 
     @Test

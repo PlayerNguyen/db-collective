@@ -3,7 +3,7 @@ package com.playernguyen.dbcollective.mysql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.zaxxer.hikari.HikariConfig;
+import com.playernguyen.dbcollective.response.DatabaseResponse;
 import com.zaxxer.hikari.HikariDataSource;
 
 /**
@@ -12,42 +12,83 @@ import com.zaxxer.hikari.HikariDataSource;
  */
 public class MySQLHikariDispatch extends MySQLDispatchWrapper {
 
-    private final HikariConfig hikariConfig = new HikariConfig();
     private HikariDataSource source;
 
-    public MySQLHikariDispatch() throws ClassNotFoundException {
+    /**
+     * Basic construction with args
+     * 
+     * @param host     a host of mysql server
+     * @param port     a port of mysql server
+     * @param username a username of mysql server
+     * @param password a password of mysql server
+     * @param database a database of mysql server
+     * @param options  extra options to connect, as url parameter
+     * @throws ClassNotFoundException no driver found
+     */
+    public MySQLHikariDispatch(String host, String port, String username, String password, String database,
+            String options) throws ClassNotFoundException {
         // Check contains driver
         Class.forName("com.mysql.jdbc.Driver");
-        // follows a initial set up in Hikari, as default, you can all of this
-        // properties.
-        hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
-        hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
-        hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        // Build a url from configured item
+
+        setHost(host);
+        setPort(port);
+        setUsername(username);
+        setPassword(password);
+        setDatabase(database);
+        setOptions(options);
+        
+        // Build a data source
+        rebuildDataSource();
+    }
+
+    /**
+     * A data source of this class. NOTE: Any update must call {@link #rebuildDataSource()}
+     * 
+     * @return a data source
+     */
+    public HikariDataSource getDataSource() {
+        return source;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void openConnection(DatabaseResponse<Connection> connection) throws SQLException {
+        // Create new instance whether is null
+        if (this.source == null) {
+            rebuildDataSource();
+        }
+
+        // open a connection with try-with-resource, bare it with a response callback
+        try (Connection conn = this.source.getConnection()) {
+            connection.accept(conn);
+        }
+    }
+
+    /**
+     * Rebuilds a data source in connection pool
+     */
+    public void rebuildDataSource() {
+        this.source = new HikariDataSource();
         String url = String.format("jdbc:mysql://%s:%s/%s?%s", getHost(), getPort(), getDatabase(),
                 (getOptions() != null ? getOptions() : ""));
-        hikariConfig.setJdbcUrl(url);
-        hikariConfig.setUsername(getUsername());
-        hikariConfig.setPassword(getPassword());
-        // Add more config after initialized is available
-        this.source = new HikariDataSource(hikariConfig);
+        this.source.setJdbcUrl(url);
+        this.source.setUsername(getUsername());
+        this.source.setPassword(getPassword());
+        this.source.setMaximumPoolSize(20);
     }
 
-    public HikariConfig getHikariConfig() {
-        return hikariConfig;
-    }
-
-    @Override
-    public Connection openConnection() throws SQLException {
-        // Create data source
-        return source.getConnection();
-    }
-
+    /**
+     * Close data source after use or clean by GC.
+     * 
+     * {@inheritDoc}
+     */
     @Override
     protected void finalize() throws Throwable {
         // super.finalize();
         // Datasource close
-        if (source != null) {
+        if (this.source != null) {
             source.close();
         }
     }

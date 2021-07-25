@@ -47,10 +47,10 @@ public interface Dispatch {
      * Open new SQL connection. NOTE: You must close the connection after querying
      * things. Otherwise, it can cause memory leaks.
      * 
-     * @return a connection
+     * @param connection callback bare connection
      * @throws SQLException throws when catch error of sql
      */
-    Connection openConnection() throws SQLException;
+    void openConnection(DatabaseResponse<Connection> connection) throws SQLException;
 
     /**
      * Prepares a statement in try-with-resource block. In order not to cause memory
@@ -63,19 +63,21 @@ public interface Dispatch {
      */
     default void preparedStatement(DatabaseResponse<PreparedStatement> statement, String sql, Object... objects)
             throws SQLException {
-        try (Connection conn = openConnection(); PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            if (isVerbose() && this.getLogger() != null) {
-                this.getLogger().info("dispatching a new prepared statement with " + sql);
+        this.openConnection((connection) -> {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                if (isVerbose() && this.getLogger() != null) {
+                    this.getLogger().info("dispatching a new prepared statement with " + sql);
+                }
+    
+                // dispatch parameter
+                for (int i = 0; i < objects.length; i++) {
+                    preparedStatement.setObject(i + 1, objects[i]);
+                }
+    
+                // accept a prepared statement
+                statement.accept(preparedStatement);
             }
-
-            // dispatch parameter
-            for (int i = 0; i < objects.length; i++) {
-                preparedStatement.setObject(i + 1, objects[i]);
-            }
-
-            // accept a prepared statement
-            statement.accept(preparedStatement);
-        }
+        });
     }
 
     /**

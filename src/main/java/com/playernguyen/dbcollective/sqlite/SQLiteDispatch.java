@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import com.playernguyen.dbcollective.DispatchAbstract;
+import com.playernguyen.dbcollective.response.DatabaseResponse;
 
 /**
  * An SQLite dispatch, deal with SQL Driver.
@@ -27,8 +28,10 @@ public class SQLiteDispatch extends DispatchAbstract {
     }
 
     @Override
-    public Connection openConnection() throws SQLException {
-        return DriverManager.getConnection(PREFIX + fileName);
+    public void openConnection(DatabaseResponse<Connection> connection) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(PREFIX + fileName)) {
+            connection.accept(conn);
+        }
     }
 
 }

@@ -71,7 +71,10 @@ public class MySQL {
     
     @Test
     public void shouldConnected() throws SQLException {
-        assertNotNull(dispatch.openConnection());
+        dispatch.openConnection(connection -> {
+
+            assertNotNull(connection);
+        });
     }
 
     @Test
