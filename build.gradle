@@ -24,16 +24,14 @@ dependencies {
 
     // Import MySQL Connector/J
     // https://mvnrepository.com/artifact/mysql/mysql-connector-java
-    implementation 'mysql:mysql-connector-java:8.0.16'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.16'
 
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
-    // implementation group: 'com.zaxxer', name: 'HikariCP', version: '2.3.2'
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '2.3.2'
 
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
     // testImplementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.15.1'
-    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.15.1'
-
+    runtimeOnly group: 'org.xerial', name: 'sqlite-jdbc', version: '3.15.1'
 
 }
 
