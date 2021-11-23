@@ -11,33 +11,22 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
-@Ignore // Remove this line to test with MySQL
 public class MySQLHikari {
     private static MySQLHikariDispatch dispatch;
 
     @BeforeClass
-    public static void setup() throws IOException, ClassNotFoundException, SQLException {
-        URL url = MySQL.class.getResource("/database.properties");
-        if (url == null) {
-            throw new NullPointerException("not found database configuration file");
-        }
+    public static void setup() throws ClassNotFoundException, SQLException {
 
-        InputStream stream = url.openStream();
-
-        Properties properties = new Properties();
-        properties.load(stream);
-        properties.forEach((a, b) -> {
-            System.out.println(a + " -> " + b);
-        });
-
-        dispatch = new MySQLHikariDispatch(properties.getProperty("Host"), properties.getProperty("Port"),
-                properties.getProperty("Username"), properties.getProperty("Password"),
-                properties.getProperty("Database"), properties.getProperty("Options"));
+        dispatch = new MySQLHikariDispatch(
+                "localhost",
+                "3306",
+                System.getenv("DB_USER"),
+                System.getenv("DB_PASSWORD"),
+                System.getenv("DB_DATABASE"),
+                System.getenv("DB_OPTIONS")
+        );
         dispatch.setVerbose(true);
         dispatch.setLogger(Logger.getLogger(MySQL.class.getName()));
 
@@ -53,17 +42,12 @@ public class MySQLHikari {
 
     @AfterClass
     public static void teardown() throws SQLException {
-        dispatch.execute(callback -> {
-
-        }, "DROP TABLE IF EXISTS model");
+        dispatch.execute(callback -> { }, "DROP TABLE IF EXISTS model");
     }
 
     @Test
     public void shouldConnected() throws SQLException {
-        dispatch.openConnection(connection -> {
-
-            assertNotNull(connection);
-        });
+        dispatch.openConnection(Assert::assertNotNull);
     }
 
     @Test

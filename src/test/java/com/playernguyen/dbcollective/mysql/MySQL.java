@@ -11,42 +11,27 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 
-@Ignore // Remove this line to test with MySQL
+// @Ignore // Remove this line to test with MySQL
 public class MySQL {
 
     private static MySQLDispatch dispatch;
 
     @BeforeClass
-    public static void setup() throws IOException, ClassNotFoundException, SQLException {
-        URL url = MySQL.class.getResource("/database.properties");
-        if (url == null) {
-            throw new NullPointerException("not found database configuration file");
-        }
-
-        InputStream stream = url.openStream();
-
-        Properties properties = new Properties();
-        properties.load(stream);
-        properties.forEach((a, b) -> {
-            System.out.println(a + " -> " + b);
-        });
+    public static void setup() throws ClassNotFoundException, SQLException {
 
         dispatch = new MySQLDispatch();
         dispatch.setVerbose(true);
         dispatch.setLogger(Logger.getLogger(MySQL.class.getName()));
 
-        dispatch.setHost(properties.getProperty("Host"));
-        dispatch.setPort(properties.getProperty("Port"));
-        dispatch.setUsername(properties.getProperty("Username"));
-        dispatch.setPassword(properties.getProperty("Password"));
-        dispatch.setDatabase(properties.getProperty("Database"));
-        dispatch.setOptions(properties.getProperty("Options"));
+        dispatch.setHost("localhost");
+        dispatch.setPort("3306");
+        dispatch.setUsername(System.getenv("DB_USER"));
+        dispatch.setPassword(System.getenv("DB_PASSWORD"));
+        dispatch.setDatabase(System.getenv("DB_DATABASE"));
+        dispatch.setOptions(System.getenv("DB_OPTIONS"));
 
         dispatch.execute(callback -> {
         }, "CREATE TABLE IF NOT EXISTS model (id int not null primary key auto_increment, height int not null, weight int not null)");
@@ -71,10 +56,7 @@ public class MySQL {
     
     @Test
     public void shouldConnected() throws SQLException {
-        dispatch.openConnection(connection -> {
-
-            assertNotNull(connection);
-        });
+        dispatch.openConnection(Assert::assertNotNull);
     }
 
     @Test
